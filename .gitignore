@@ -1,0 +1,21 @@
+# Python virtual environments
+.venv/
+__pycache__/
+*.pyc
+
+# Direnv
+.envrc
+.direnv/
+
+# IDE/configs
+.vscode/
+.idea/
+
+# Data
+# data/
+*.csv
+*.json
+*.parquet
+
+# OS stuff
+.DS_Store
