@@ -20,18 +20,64 @@ function App() {
     setSelectedSession({ year, event, sessionType });
     
     try {
-      const [driversData, lapsData, resultsData] = await Promise.all([
+      console.log('Fetching data for:', year, event, sessionType);
+      
+      // Fetch all data, but handle errors individually
+      const results = await Promise.allSettled([
         getDrivers(year, event, sessionType),
         getLaps(year, event, sessionType),
         getResults(year, event, sessionType),
       ]);
       
-      setDrivers(driversData);
-      setLaps(lapsData);
-      setResults(resultsData);
+      const [driversResult, lapsResult, resultsResult] = results;
+      
+      // Handle drivers
+      if (driversResult.status === 'fulfilled') {
+        setDrivers(driversResult.value || []);
+      } else {
+        console.error('Error fetching drivers:', driversResult.reason);
+        setDrivers([]);
+      }
+      
+      // Handle laps
+      if (lapsResult.status === 'fulfilled') {
+        setLaps(lapsResult.value || { laps: [], count: 0 });
+      } else {
+        console.error('Error fetching laps:', lapsResult.reason);
+        setLaps({ laps: [], count: 0 });
+      }
+      
+      // Handle results
+      if (resultsResult.status === 'fulfilled') {
+        setResults(resultsResult.value || []);
+      } else {
+        console.error('Error fetching results:', resultsResult.reason);
+        setResults([]);
+      }
+      
+      // Show error if all requests failed
+      const allFailed = results.every(r => r.status === 'rejected');
+      if (allFailed) {
+        const errorMessages = results
+          .filter(r => r.status === 'rejected')
+          .map(r => r.reason?.message || 'Unknown error')
+          .join('; ');
+        setError(`Failed to fetch data: ${errorMessages}`);
+      } else {
+        // Clear error if at least one request succeeded
+        setError(null);
+      }
+      
+      console.log('Data received:', { 
+        drivers: driversResult.status === 'fulfilled' ? driversResult.value : 'failed',
+        laps: lapsResult.status === 'fulfilled' ? lapsResult.value : 'failed',
+        results: resultsResult.status === 'fulfilled' ? resultsResult.value : 'failed'
+      });
+      
       setActiveTab('drivers');
     } catch (err) {
-      setError(err.message);
+      console.error('Unexpected error in handleSessionSelect:', err);
+      setError(err.message || 'An unexpected error occurred');
       setDrivers([]);
       setLaps([]);
       setResults([]);
