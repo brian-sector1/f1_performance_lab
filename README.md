@@ -4,6 +4,8 @@ Hi! I'm Brian and I thought it would be fun to just look at various F1 data and 
 
 This project combines the power of FastF1 (Python library for Formula 1 data) with a modern React web interface to explore and visualize F1 session data.
 
+This branch is specifically for testing the ML AI so that it does not conflict with the main branch's web interface.
+
 ## Project Structure
 
 ```
