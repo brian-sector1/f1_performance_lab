@@ -7,6 +7,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 60000, // 60 seconds timeout for FastF1 data loading
 });
 
 export const getSession = async (year, event, sessionType) => {
