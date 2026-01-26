@@ -1,13 +1,18 @@
 import fastf1
 from typing import Dict, List, Optional, Any
 import pandas as pd
+import os
+from pathlib import Path
 
 class FastF1Service:
     """Service for fetching and processing FastF1 data"""
     
     def __init__(self):
         # Enable caching for better performance
-        fastf1.Cache.enable_cache('~/.cache/fastf1')
+        # Expand ~ to home directory and create cache directory if it doesn't exist
+        cache_dir = os.path.expanduser('~/.cache/fastf1')
+        Path(cache_dir).mkdir(parents=True, exist_ok=True)
+        fastf1.Cache.enable_cache(cache_dir)
     
     def get_session(self, year: int, event: str, session_type: str):
         """
