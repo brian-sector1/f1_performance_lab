@@ -1,7 +1,19 @@
-const DriverList = ({ drivers, onDriverClick }) => {
+import { useNavigate } from 'react-router-dom';
+
+const DriverList = ({ drivers, sessionInfo }) => {
+  const navigate = useNavigate();
+
   if (!drivers || drivers.length === 0) {
     return <div className="empty-state">No drivers found</div>;
   }
+
+  const handleDriverClick = (driverAbbreviation) => {
+    if (sessionInfo) {
+      navigate(
+        `/driver/${sessionInfo.year}/${sessionInfo.event}/${sessionInfo.sessionType}/${driverAbbreviation}`
+      );
+    }
+  };
 
   return (
     <div className="driver-list">
@@ -11,7 +23,7 @@ const DriverList = ({ drivers, onDriverClick }) => {
           <div
             key={driver.abbreviation}
             className="driver-card"
-            onClick={() => onDriverClick(driver.abbreviation)}
+            onClick={() => handleDriverClick(driver.abbreviation)}
           >
             <div className="driver-number">{driver.number}</div>
             <div className="driver-info">

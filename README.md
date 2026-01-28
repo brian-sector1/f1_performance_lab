@@ -29,6 +29,7 @@ f1_performance_lab/
 - ⏱️ Explore detailed lap data with sector times
 - 🏆 Check session results and qualifying times
 - 📊 Interactive tables with filtering capabilities
+- 🔗 Click any driver to view their detailed lap data on a dedicated page
 
 ## Setup Instructions
 
@@ -99,9 +100,10 @@ You'll need to run both servers simultaneously:
 2. Select a year, event, and session type from the dropdowns
 3. Click "Load Session" to fetch data
 4. Navigate between tabs to view:
-   - **Drivers**: List of all drivers in the session
-   - **Laps**: Detailed lap data (click a driver card to filter)
+   - **Drivers**: List of all drivers in the session (click any driver card to view their detailed lap data)
+   - **Laps**: Detailed lap data for all drivers
    - **Results**: Session results and qualifying times
+5. **View Driver Laps**: Click on any driver card to navigate to a dedicated page showing that driver's lap-by-lap performance
 
 ## API Endpoints
 
@@ -146,5 +148,5 @@ curl http://localhost:8000/api/session/2021/Monaco/R/laps?driver=VER
 ## Technologies Used
 
 - **Backend**: FastAPI, FastF1, Pandas, Uvicorn
-- **Frontend**: React, Vite, Axios
+- **Frontend**: React, Vite, React Router, Axios
 - **Data Source**: FastF1 (Formula 1 official timing data)
