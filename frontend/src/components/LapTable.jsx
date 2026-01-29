@@ -1,3 +1,5 @@
+import { formatLapTime } from '../utils/formatLapTime';
+
 const LapTable = ({ laps }) => {
   if (!laps || laps.length === 0) {
     return <div className="empty-state">No lap data available</div>;
@@ -27,11 +29,11 @@ const LapTable = ({ laps }) => {
                 <td className="driver-cell">{lap.driver}</td>
                 <td>{lap.lap_number}</td>
                 <td className={lap.is_personal_best ? 'personal-best' : ''}>
-                  {lap.lap_time || '-'}
+                  {formatLapTime(lap.lap_time) ?? '-'}
                 </td>
-                <td>{lap.sector_1_time || '-'}</td>
-                <td>{lap.sector_2_time || '-'}</td>
-                <td>{lap.sector_3_time || '-'}</td>
+                <td>{formatLapTime(lap.sector_1_time) ?? '-'}</td>
+                <td>{formatLapTime(lap.sector_2_time) ?? '-'}</td>
+                <td>{formatLapTime(lap.sector_3_time) ?? '-'}</td>
                 <td>{lap.compound || '-'}</td>
                 <td>{lap.tyre_life || '-'}</td>
                 <td>

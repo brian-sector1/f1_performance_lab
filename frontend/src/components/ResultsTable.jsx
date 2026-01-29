@@ -1,3 +1,5 @@
+import { formatLapTime } from '../utils/formatLapTime';
+
 const ResultsTable = ({ results }) => {
   if (!results || results.length === 0) {
     return <div className="empty-state">No results available</div>;
@@ -29,10 +31,10 @@ const ResultsTable = ({ results }) => {
                 <td className="driver-cell">{result.abbreviation}</td>
                 <td>{result.name}</td>
                 <td>{result.team}</td>
-                <td>{result.q1 || '-'}</td>
-                <td>{result.q2 || '-'}</td>
-                <td>{result.q3 || '-'}</td>
-                <td>{result.best_lap_time || '-'}</td>
+                <td>{formatLapTime(result.q1) ?? '-'}</td>
+                <td>{formatLapTime(result.q2) ?? '-'}</td>
+                <td>{formatLapTime(result.q3) ?? '-'}</td>
+                <td>{formatLapTime(result.best_lap_time) ?? '-'}</td>
                 <td>{result.points > 0 ? result.points : '-'}</td>
                 <td>{result.status || 'Finished'}</td>
               </tr>

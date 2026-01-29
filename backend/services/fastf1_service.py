@@ -66,22 +66,40 @@ class FastF1Service:
             laps = session.laps
             
             if driver:
+                # Try abbreviation first (e.g. "BOT", "VER")
                 laps = laps.pick_drivers(driver)
+                # If no laps found, try resolving abbreviation to driver number
+                if len(laps) == 0:
+                    for drv_num in session.drivers:
+                        try:
+                            info = session.get_driver(drv_num)
+                            if info.get("Abbreviation") == driver:
+                                laps = session.laps.pick_drivers(drv_num)
+                                break
+                        except (KeyError, TypeError):
+                            continue
+            
+            # Reset index so MultiIndex levels become columns (FastF1 laps can have MultiIndex)
+            if hasattr(laps, 'reset_index') and not laps.empty:
+                laps = laps.reset_index()
             
             # Convert to list of dictionaries
             laps_data = []
             for _, lap in laps.iterrows():
+                driver_abbrev = lap.get("Driver", driver or "")
+                if pd.isna(driver_abbrev):
+                    driver_abbrev = driver or ""
                 lap_dict = {
-                    "driver": lap["Driver"],
-                    "lap_number": int(lap["LapNumber"]),
-                    "lap_time": str(lap["LapTime"]) if pd.notna(lap["LapTime"]) else None,
-                    "sector_1_time": str(lap["Sector1Time"]) if pd.notna(lap["Sector1Time"]) else None,
-                    "sector_2_time": str(lap["Sector2Time"]) if pd.notna(lap["Sector2Time"]) else None,
-                    "sector_3_time": str(lap["Sector3Time"]) if pd.notna(lap["Sector3Time"]) else None,
-                    "compound": lap["Compound"] if pd.notna(lap["Compound"]) else None,
-                    "tyre_life": int(lap["TyreLife"]) if pd.notna(lap["TyreLife"]) else None,
-                    "is_personal_best": bool(lap["IsPersonalBest"]) if pd.notna(lap["IsPersonalBest"]) else False,
-                    "is_fastest": bool(lap["IsFastest"]) if pd.notna(lap["IsFastest"]) else False,
+                    "driver": str(driver_abbrev) if driver_abbrev else (driver or ""),
+                    "lap_number": int(lap.get("LapNumber", 0)) if pd.notna(lap.get("LapNumber")) else 0,
+                    "lap_time": str(lap.get("LapTime")) if pd.notna(lap.get("LapTime")) else None,
+                    "sector_1_time": str(lap.get("Sector1Time")) if pd.notna(lap.get("Sector1Time")) else None,
+                    "sector_2_time": str(lap.get("Sector2Time")) if pd.notna(lap.get("Sector2Time")) else None,
+                    "sector_3_time": str(lap.get("Sector3Time")) if pd.notna(lap.get("Sector3Time")) else None,
+                    "compound": lap.get("Compound") if pd.notna(lap.get("Compound")) else None,
+                    "tyre_life": int(lap.get("TyreLife")) if pd.notna(lap.get("TyreLife")) else None,
+                    "is_personal_best": bool(lap.get("IsPersonalBest")) if pd.notna(lap.get("IsPersonalBest")) else False,
+                    "is_fastest": bool(lap.get("IsFastest")) if pd.notna(lap.get("IsFastest")) else False,
                 }
                 laps_data.append(lap_dict)
             
