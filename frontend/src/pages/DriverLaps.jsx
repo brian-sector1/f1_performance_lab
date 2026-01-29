@@ -71,9 +71,16 @@ const DriverLaps = () => {
         {!loading && !error && (
           <div className="laps-content">
             <div className="laps-summary">
-              <p>Total Laps: {laps.count || laps.laps?.length || 0}</p>
+              <p>Total Laps: {laps.count ?? laps.laps?.length ?? 0}</p>
             </div>
-            <LapTable laps={laps.laps || laps} />
+            {(laps.laps?.length > 0 || (Array.isArray(laps) && laps.length > 0)) ? (
+              <LapTable laps={laps.laps || laps} />
+            ) : (
+              <div className="empty-state">
+                <p>No lap data found for this driver in this session.</p>
+                <p className="empty-hint">The session may have no recorded laps for this driver, or the data may still be loading.</p>
+              </div>
+            )}
           </div>
         )}
       </main>

@@ -326,6 +326,12 @@ tbody tr.fastest-lap {
   font-size: 1.1rem;
 }
 
+.empty-state .empty-hint {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: #606060;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .app-header h1 {
