@@ -5,6 +5,13 @@ const ResultsTable = ({ results }) => {
     return <div className="empty-state">No results available</div>;
   }
 
+  // Sort by position so drivers are always ordered 1, 2, 3...
+  const sortedResults = [...results].sort((a, b) => {
+    const posA = a.position ?? 999;
+    const posB = b.position ?? 999;
+    return posA - posB;
+  });
+
   return (
     <div className="results-table">
       <h3>Session Results</h3>
@@ -25,9 +32,9 @@ const ResultsTable = ({ results }) => {
             </tr>
           </thead>
           <tbody>
-            {results.map((result, index) => (
-              <tr key={index} className={result.position === 1 ? 'winner' : ''}>
-                <td className="position">{result.position || '-'}</td>
+            {sortedResults.map((result, index) => (
+              <tr key={result.abbreviation ?? index} className={result.position === 1 ? 'winner' : ''}>
+                <td className="position">{result.position ?? index + 1}</td>
                 <td className="driver-cell">{result.abbreviation}</td>
                 <td>{result.name}</td>
                 <td>{result.team}</td>

@@ -118,9 +118,12 @@ class FastF1Service:
             results = session.results
             results_data = []
             
-            for _, result in results.iterrows():
+            for i, (_, result) in enumerate(results.iterrows()):
+                # Position: use FastF1 'Position' when available, else 1-based row order (results are sorted by position)
+                pos_raw = result.get("Position")
+                position = int(pos_raw) if pd.notna(pos_raw) else (i + 1)
                 result_dict = {
-                    "position": int(result["Position"]) if pd.notna(result["Position"]) else None,
+                    "position": position,
                     "abbreviation": result["Abbreviation"],
                     "driver_number": int(result["DriverNumber"]) if pd.notna(result["DriverNumber"]) else None,
                     "name": result["FullName"],
@@ -134,6 +137,8 @@ class FastF1Service:
                 }
                 results_data.append(result_dict)
             
+            # Ensure results are ordered by position
+            results_data.sort(key=lambda r: (r["position"] is None, r["position"] or 999))
             return results_data
         except Exception as e:
             return []
