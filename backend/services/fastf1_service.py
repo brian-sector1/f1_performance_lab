@@ -107,6 +107,40 @@ class FastF1Service:
         except Exception as e:
             return []
     
+    def _get_driver_best_lap_time(self, session, driver_abbrev: str, driver_number: Any) -> Optional[str]:
+        """adding display of the best lap time to the results page"""
+        try:
+            # Try driver number first (more reliable from results), then abbreviation
+            laps = None
+            if driver_number is not None:
+                laps = session.laps.pick_drivers(str(driver_number))
+            if (laps is None or laps.empty) and driver_abbrev:
+                laps = session.laps.pick_drivers(driver_abbrev)
+            if laps is None or laps.empty:
+                return None
+            # Exclude deleted laps if column exists (e.g. Monaco 2021 - deleted laps)
+            if hasattr(laps, 'columns') and "Deleted" in laps.columns:
+                laps = laps[~laps["Deleted"].fillna(False)]
+            if laps.empty:
+                return None
+            # Use FastF1's pick_fastest (official personal best). Fallback to only_by_time=True
+            # if no lap is marked IsPersonalBest (e.g. some race sessions).
+            fastest = laps.pick_fastest()
+            if fastest is None or (hasattr(fastest, 'empty') and fastest.empty):
+                fastest = None
+            lt = None
+            if fastest is not None:
+                lt = fastest["LapTime"] if isinstance(fastest, pd.Series) else fastest.get("LapTime")
+            if fastest is None or pd.isna(lt):
+                fastest = laps.pick_fastest(only_by_time=True)
+                if fastest is not None:
+                    lt = fastest["LapTime"] if isinstance(fastest, pd.Series) else fastest.get("LapTime")
+            if lt is None or pd.isna(lt):
+                return None
+            return str(lt)
+        except Exception:
+            return None
+    
     def get_results(self, session) -> List[Dict[str, Any]]:
         """
         Get session results
@@ -122,6 +156,12 @@ class FastF1Service:
                 # Position: use FastF1 'Position' when available, else 1-based row order (results are sorted by position)
                 pos_raw = result.get("Position")
                 position = int(pos_raw) if pd.notna(pos_raw) else (i + 1)
+                best_lap = None
+                if pd.notna(result.get("FastestLapTime")):
+                    best_lap = str(result["FastestLapTime"])
+                if best_lap is None:
+                    drv_num = int(result["DriverNumber"]) if pd.notna(result["DriverNumber"]) else None
+                    best_lap = self._get_driver_best_lap_time(session, result["Abbreviation"], drv_num)
                 result_dict = {
                     "position": position,
                     "abbreviation": result["Abbreviation"],
@@ -131,7 +171,7 @@ class FastF1Service:
                     "q1": str(result["Q1"]) if pd.notna(result.get("Q1")) else None,
                     "q2": str(result["Q2"]) if pd.notna(result.get("Q2")) else None,
                     "q3": str(result["Q3"]) if pd.notna(result.get("Q3")) else None,
-                    "best_lap_time": str(result["FastestLapTime"]) if pd.notna(result.get("FastestLapTime")) else None,
+                    "best_lap_time": best_lap,
                     "points": float(result["Points"]) if pd.notna(result.get("Points")) else 0.0,
                     "status": result["Status"] if pd.notna(result.get("Status")) else None,
                 }
