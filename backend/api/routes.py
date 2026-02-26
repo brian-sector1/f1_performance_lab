@@ -111,3 +111,25 @@ async def get_results(
         return {"results": results}
     except Exception as e:
         raise HTTPException(status_code=404, detail=f"Session not found: {str(e)}")
+
+
+@router.get("/session/{year}/{event}/{session_type}/circuit")
+async def get_circuit(
+    year: int,
+    event: str,
+    session_type: str
+):
+    """
+    Get circuit/track map data for visualization.
+    Returns track outline coordinates and corner markers.
+    """
+    try:
+        session = fastf1_service.get_session(year, event, session_type)
+        circuit = fastf1_service.get_circuit_info(session)
+        if "error" in circuit:
+            raise HTTPException(status_code=404, detail=circuit["error"])
+        return circuit
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=f"Circuit not found: {str(e)}")

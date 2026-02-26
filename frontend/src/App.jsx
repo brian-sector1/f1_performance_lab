@@ -4,6 +4,7 @@ import SessionSelector from './components/SessionSelector';
 import DriverList from './components/DriverList';
 import LapTable from './components/LapTable';
 import ResultsTable from './components/ResultsTable';
+import TrackMap from './components/TrackMap';
 import DriverLaps from './pages/DriverLaps';
 import { getDrivers, getLaps, getResults } from './services/api';
 
@@ -137,6 +138,12 @@ function App() {
                       >
                         Results ({results.length})
                       </button>
+                      <button
+                        className={activeTab === 'track' ? 'active' : ''}
+                        onClick={() => setActiveTab('track')}
+                      >
+                        Track
+                      </button>
                     </div>
 
                     <div className="tab-content">
@@ -155,6 +162,9 @@ function App() {
                       
                       {!loading && activeTab === 'results' && (
                         <ResultsTable results={results} />
+                      )}
+                      {!loading && activeTab === 'track' && (
+                        <TrackMap sessionInfo={selectedSession} />
                       )}
                     </div>
                   </div>

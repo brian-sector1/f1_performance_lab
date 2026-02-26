@@ -1,4 +1,5 @@
 import fastf1
+import numpy as np
 from typing import Dict, List, Optional, Any
 import pandas as pd
 import os
@@ -182,6 +183,71 @@ class FastF1Service:
             return results_data
         except Exception as e:
             return []
+    
+    def _rotate_points(self, xy: np.ndarray, angle_deg: float) -> np.ndarray:
+        """Rotate points [x,y] by angle_deg (degrees) using rotation matrix."""
+        angle_rad = np.deg2rad(angle_deg)
+        cos_a, sin_a = np.cos(angle_rad), np.sin(angle_rad)
+        rot_mat = np.array([[cos_a, sin_a], [-sin_a, cos_a]])
+        return np.matmul(xy, rot_mat)
+    
+    def get_circuit_info(self, session) -> Dict[str, Any]:
+        """
+        Get circuit/track map data for visualization.
+        Returns track outline (from lap position data) and corner markers.
+        """
+        try:
+            circuit_info = session.get_circuit_info()
+            if circuit_info is None:
+                return {"error": "Circuit info not available for this event"}
+            
+            rotation = float(circuit_info.rotation)
+            location = str(session.event.get("Location", ""))
+            
+            # Get track outline from fastest lap position data (need a Lap with get_pos_data)
+            lap = session.laps.pick_fastest() if len(session.laps) > 0 else None
+            if lap is None or (hasattr(lap, 'empty') and lap.empty):
+                # Fallback: try first available lap
+                lap = session.laps.iloc[0] if len(session.laps) > 0 else None
+            if lap is None:
+                return {"rotation": rotation, "location": location, "track": [], "corners": []}
+            
+            pos = lap.get_pos_data()
+            if pos is None or (hasattr(pos, 'empty') and pos.empty):
+                track_points = []
+            else:
+                try:
+                    track = pos[["X", "Y"]].to_numpy()
+                except (KeyError, TypeError):
+                    track = pos.loc[:, ("X", "Y")].to_numpy() if hasattr(pos.columns, '__iter__') else np.array([])
+                if len(track) > 0:
+                    track_rotated = self._rotate_points(track, rotation)
+                    track_points = track_rotated.tolist()
+                else:
+                    track_points = []
+            
+            # Get corners and rotate their positions
+            corners_data = []
+            if hasattr(circuit_info, 'corners') and circuit_info.corners is not None:
+                for _, corner in circuit_info.corners.iterrows():
+                    xy = np.array([[corner["X"], corner["Y"]]])
+                    xy_rot = self._rotate_points(xy, rotation)
+                    corners_data.append({
+                        "x": float(xy_rot[0, 0]),
+                        "y": float(xy_rot[0, 1]),
+                        "number": int(corner.get("Number", 0)),
+                        "letter": str(corner.get("Letter", "")),
+                        "angle": float(corner.get("Angle", 0)),
+                    })
+            
+            return {
+                "rotation": rotation,
+                "location": location,
+                "track": track_points,
+                "corners": corners_data,
+            }
+        except Exception as e:
+            return {"error": str(e)}
     
     def get_session_info(self, session) -> Dict[str, Any]:
         """

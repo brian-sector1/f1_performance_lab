@@ -67,4 +67,15 @@ export const getResults = async (year, event, sessionType) => {
   }
 };
 
+export const getCircuit = async (year, event, sessionType) => {
+  try {
+    const response = await api.get(`/api/session/${year}/${event}/${sessionType}/circuit`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching circuit:', error);
+    const errorMessage = error.response?.data?.detail || error.message || 'Failed to fetch circuit';
+    throw new Error(errorMessage);
+  }
+};
+
 export default api;
