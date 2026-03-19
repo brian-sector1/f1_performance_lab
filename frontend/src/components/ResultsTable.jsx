@@ -1,18 +1,6 @@
 import { useState } from 'react';
 import { formatLapTime, parseLapTimeToSeconds } from '../utils/formatLapTime';
 
-const SORT_OPTIONS = [
-  { key: 'position', label: 'Position' },
-  { key: 'abbreviation', label: 'Driver' },
-  { key: 'name', label: 'Name' },
-  { key: 'team', label: 'Team' },
-  { key: 'q1', label: 'Q1' },
-  { key: 'q2', label: 'Q2' },
-  { key: 'q3', label: 'Q3' },
-  { key: 'best_lap_time', label: 'Best Lap' },
-  { key: 'points', label: 'Points' },
-];
-
 const ResultsTable = ({ results }) => {
   const [sortBy, setSortBy] = useState('position');
   const [sortDir, setSortDir] = useState('asc');
@@ -64,29 +52,13 @@ const ResultsTable = ({ results }) => {
       onKeyDown={(e) => e.key === 'Enter' && handleSort(colKey)}
     >
       {label}
-      {sortBy === colKey && <span className="sort-arrow">{sortDir === 'asc' ? ' ▲' : ' ▼'}</span>}
+      {sortBy === colKey && <span className="sort-arrow">{sortDir === 'asc' ? ' ▼' : ' ▲'}</span>}
     </th>
   );
 
   return (
     <div className="results-table">
       <h3>Session Results</h3>
-      <div className="results-table-sort">
-        <label>Sort by:</label>
-        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-          {SORT_OPTIONS.map(({ key, label }) => (
-            <option key={key} value={key}>{label}</option>
-          ))}
-        </select>
-        <button
-          type="button"
-          className="sort-dir-btn"
-          onClick={() => setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))}
-          title={sortDir === 'asc' ? 'Ascending (click for descending)' : 'Descending (click for ascending)'}
-        >
-          {sortDir === 'asc' ? '▲ Asc' : '▼ Desc'}
-        </button>
-      </div>
       <div className="table-container">
         <table>
           <thead>
